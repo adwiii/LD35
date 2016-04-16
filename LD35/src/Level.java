@@ -21,7 +21,13 @@ public class Level {
 	}
 	
 	public Level() {
-		
+		lines.add(new Line2D.Double(100, 100, 100, 500));
+		lines.add(new Line2D.Double(100, 500, 300, 700));
+		lines.add(new Line2D.Double(300, 700, 700, 700));
+		lines.add(new Line2D.Double(700, 700, 900, 600));
+		lines.add(new Line2D.Double(900, 100, 900, 600));
+		goal = new Rectangle(0,0,0,0);
+		walls = new Rectangle(0,0,1024,768);
 	}
 	
 	public void draw(Graphics2D g) {

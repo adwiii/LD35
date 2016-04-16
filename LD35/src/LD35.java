@@ -15,7 +15,7 @@ public class LD35 implements KeyListener {
 
 	public static final String TITLE = "TITLE";
 	public static final String PRESS_ANY = "Press any key to begin...";
-	public static final long PHYSICS_DELAY = 17,
+	public static final long PHYSICS_DELAY = 10,
 			GRAPHICS_DELAY = 17;
 	
 	public Font menuFont, menuFontSmall;
@@ -44,7 +44,7 @@ public class LD35 implements KeyListener {
 		p = new JPanel();
 		p.addKeyListener(this);
 		f.setResizable(false); // maybe
-		p.setPreferredSize(new Dimension(width = 800, height = 600));
+		p.setPreferredSize(new Dimension(width = 1024, height = 768));
 		f.getContentPane().add(p);
 		f.pack();
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -57,7 +57,7 @@ public class LD35 implements KeyListener {
 		menuFontSmall = new Font(null, Font.PLAIN, height / 20);
 		
 		level = new Level();
-		player = new Player(400, 300);
+		player = new Player(400, 300, level);
 
 		initThreads();
 
@@ -134,7 +134,7 @@ public class LD35 implements KeyListener {
 	}
 
 	public void gameGraphics(Graphics2D g) {
-		//		level.draw(g);
+		level.draw(g);
 //		player.angle += .1;
 		player.draw(g);
 	}

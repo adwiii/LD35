@@ -12,12 +12,15 @@ public class Player {
 
 	public double angle = 0;
 	public int x = 0, y = 0, radius  = 15;
+	public double vx = 0, vy = 0;
 	public Color [] colors = new Color[]{
 			Color.cyan,
 			Color.magenta,
 			Color.green
 	};
 	public Color c = Color.WHITE;
+	
+	public Level l;
 
 	public static final int TRANSITION = 10; //default ticks
 	public int transition = 0; //ticks of the transition animation
@@ -31,7 +34,7 @@ public class Player {
 			SQUARE_TRIANGLE = 1 + (2 << 2),
 			TRIANGLE_SQUARE = 2 + (1 << 2);
 
-	public Player(int x, int y) {
+	public Player(int x, int y, Level l) {
 		this.x = x;
 		this.y = y;
 	}
@@ -134,6 +137,20 @@ public class Player {
 		this.to = to;
 		transitionType = to + (type << 2);
 		transition = TRANSITION;
+	}
+	
+	public void physics() {
+		switch (type) {
+		case CIRCLE:
+			
+			break;
+		case SQUARE:
+			
+			break;
+		case TRIANGLE:
+			
+			break;
+		}
 	}
 
 }
