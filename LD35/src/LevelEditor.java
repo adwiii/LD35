@@ -8,7 +8,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
-import java.awt.geom.Line2D.Double;
 import java.util.ArrayList;
 
 public class LevelEditor implements MouseListener, MouseMotionListener, KeyListener {
@@ -34,6 +33,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 	
 	public LevelEditor (int width, int height) {
 		goal = new Rectangle(width /2, height / 2, width / 10, height / 10);
+		start = new Point(width / 2, height / 4);
 	}
 
 	public static final int RAD = 3;
@@ -44,10 +44,14 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 	public void drawEditor(Graphics2D g) {
 		g.setColor(Color.white);
 		for (Point p : vertices) {
-			g.drawOval(p.x - RAD * 2, p.y - RAD * 2, RAD * 2, RAD * 2);
+			g.drawOval(p.x - RAD, p.y - RAD, RAD * 2, RAD * 2);
 		}
 		for (Connection c : connections) {
 			c.draw(g);
+		}
+		g.setColor(Color.magenta);
+		for (Point p : selected) {
+			g.drawOval(p.x - RAD, p.y - RAD, RAD * 2, RAD * 2);
 		}
 		g.setColor(Color.red);
 		g.draw(goal);
@@ -55,7 +59,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 		g.fill(goal);
 
 		g.setColor(Color.green);
-		g.fillOval(start.x - RAD * 2, start.y - RAD * 2, RAD * 2, RAD * 2);
+		g.drawOval(start.x - RAD, start.y - RAD, RAD * 2, RAD * 2);
 	}
 	public int cx = 0, cy = 0;
 	@Override
@@ -65,6 +69,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 			ty = cy - e.getY();
 		}
 		if (selected.size() == 1) {
+//			System.out.println("dragging");
 			selected.get(0).x = e.getX() - tx;
 			selected.get(0).y = e.getY() - ty;
 		}
@@ -102,9 +107,12 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 	public void mousePressed(MouseEvent e) {
 		cx = e.getX();
 		cy = e.getY();
+//		System.out.println(e.getPoint());
 		boolean found = false;
 		for (Point p : vertices) {
+//			System.out.println(p);
 			if (Math.hypot(p.x - cx, p.y - cy) < RAD) {
+				if (selected.contains(p)) selected.clear();
 				selected.add(p);
 				found = true;
 				break;
@@ -122,7 +130,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 			}
 		}
 		if (e.getButton() == MouseEvent.BUTTON3) {
-			if (selected.size() == 1){
+			if (selected.size() == 0){
 				vertices.add(new Point(e.getX() - tx, e.getY() - ty));
 			} else if (selected.size() == 2) {
 				if (found) {
@@ -139,7 +147,10 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 		}
 	}
 	@Override
-	public void mouseReleased(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {
+		goalSelected = false;
+		startSelected = false;
+	}
 
 	public static class Connection {
 		public Point v1;

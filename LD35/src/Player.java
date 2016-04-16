@@ -1,18 +1,21 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.geom.Line2D;
 
 public class Player {
 
 	public static final int CIRCLE = 0,
 			SQUARE = 1,
 			TRIANGLE = 2;
-
+	static final double G = .1;
+	static final double TERMINAL = 5;
 	public int type = 1;
 
 	public double angle = 0;
 	public int x = 0, y = 0, radius  = 15;
-	public double vx = 0, vy = 0;
+	public double vx = 0, vy = 0, vr = 0;
+	public double dx = 0, dy = 0;
 	public Color [] colors = new Color[]{
 			Color.cyan,
 			Color.magenta,
@@ -37,6 +40,9 @@ public class Player {
 	public Player(int x, int y, Level l) {
 		this.x = x;
 		this.y = y;
+		dx = x;
+		dy = y;
+		this.l = l;
 	}
 
 	public int resolution = 10;
@@ -138,19 +144,107 @@ public class Player {
 		transitionType = to + (type << 2);
 		transition = TRANSITION;
 	}
-	
+	boolean onGround;
+	boolean onLeft;
+	boolean onRight;
+	double vxmoment;
 	public void physics() {
 		switch (type) {
 		case CIRCLE:
 			
 			break;
 		case SQUARE:
-			
+			double rad = radius/Math.sqrt(2);
+			if (onGround) {
+				System.out.println("on ground");
+				onLeft = false;
+				onRight = false;
+				if (LD35.me.jump) {
+					System.out.println("spaaaaaace");
+					vy = -5;
+					LD35.me.jump = false;
+				}
+			}
+			else vy += G;
+			if (onLeft && LD35.me.jump) {
+				vy = -5;
+				vxmoment = 6;
+				onLeft = false;
+				LD35.me.jump = false;
+			} else if (onRight && LD35.me.jump) {
+				vy = -5;
+				vxmoment = -6;
+				onRight = false;
+				LD35.me.jump = false;
+			}
+			vx = 0;
+			if (LD35.me.left) {
+				vx -= 2;
+				onRight = false;
+			}
+			if (LD35.me.right) {
+				vx += 2;
+				onLeft = false;
+			}
+			if (vxmoment > 0) {
+				vxmoment = Math.max(0, vxmoment - (LD35.me.left? .075 : 0.1));
+				if (LD35.me.right) vxmoment = 0;
+			}
+			if (vxmoment < 0) {
+				vxmoment = Math.min(0, vxmoment + .075);
+				if (LD35.me.left) vxmoment = 0;
+			}
+			vx += vxmoment;
+			vy = Math.max(-TERMINAL, Math.min(TERMINAL, vy));
+			if (onLeft || onRight) vy = Math.min(.5, vy);
+			dx += vx;
+			dy += vy;
+			onGround = false;
+			onLeft = false;
+			onRight = false;
+			for (Line2D line : l.lines) {
+				double da = Math.hypot(line.getX1()-dx, line.getY1()-dy);
+				double db = Math.hypot(line.getX2()-dx, line.getY2()-dy);
+				double len = Math.hypot(line.getX1()-line.getX2(), line.getY1()-line.getY2());
+				double cross = ((line.getX1()-dx)*(line.getY1()-line.getY2()) - (line.getY1()-dy)*(line.getX1()-line.getX2()))/len;
+				cross = Math.abs(cross);
+				if (da <= rad || db <= rad || (Math.abs(cross) <= rad && da <= len && db <= len)) {
+					double angle = Math.atan2(line.getY2()-line.getY1(), line.getX2()-line.getX1());
+					this.angle = angle;
+					if (line.getX1()==line.getX2()) {
+						if (angle < 0) angle += Math.PI;
+						dy += (rad-cross) * Math.cos(angle);
+						if (dx > line.getX1()) {
+							onLeft = true;
+							onRight = false;
+							dx += (rad-cross) * Math.sin(angle);
+						} else {
+							onRight = true;
+							onLeft = false;
+							dx -= (rad-cross) * Math.sin(angle);
+						}
+					} else {
+						if (Math.abs(angle) > Math.PI/2) angle -= Math.signum(angle) * Math.PI;
+						if (vy >= 0) {
+							onGround = true;
+							vy = 0;
+							dx += (rad-cross) * Math.sin(angle);
+							dy -= (rad-cross) * Math.cos(angle);
+						} else {
+							dx += (rad-cross) * Math.sin(angle);
+							dy += (rad-cross) * Math.cos(angle);
+							vy = 0;
+						}
+					}
+				}
+			}
 			break;
 		case TRIANGLE:
 			
 			break;
 		}
+		x = (int) dx;
+		y = (int) dy;
 	}
 
 }

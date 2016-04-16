@@ -27,9 +27,10 @@ public class LD35 implements KeyListener {
 
 	public static final int MENU = 0,
 			PLAY = 1,
-			PAUSE = 2;
+			PAUSE = 2,
+			EDITOR = 4;
 
-	public int state = MENU;
+	public int state = EDITOR;
 
 	public Level level;
 	public Player player;
@@ -39,6 +40,8 @@ public class LD35 implements KeyListener {
 
 	public VolatileImage v;
 
+	public LevelEditor editor;
+	
 	public LD35() {
 		f = new JFrame(TITLE);
 		p = new JPanel();
@@ -53,11 +56,17 @@ public class LD35 implements KeyListener {
 		f.setLocationRelativeTo(null);
 		v = p.createVolatileImage(width, height);
 		
+		editor = new LevelEditor(width, height);
+		p.addMouseListener(editor);
+		p.addMouseMotionListener(editor);
+		p.addKeyListener(editor);
+		
+		
 		menuFont = new Font(null, Font.BOLD, height / 10);
 		menuFontSmall = new Font(null, Font.PLAIN, height / 20);
 		
 		level = new Level();
-		player = new Player(400, 300, level);
+		player = new Player(400, 600, level);
 
 		initThreads();
 
@@ -92,6 +101,8 @@ public class LD35 implements KeyListener {
 				break;
 				case MENU: menuGraphics(g);
 				break;
+				case EDITOR: editor.drawEditor(g);
+					break;
 				}
 				g.dispose();
 				p.getGraphics().drawImage(v, 0, 0, null);
@@ -113,14 +124,15 @@ public class LD35 implements KeyListener {
 
 
 	public void gamePhysics() {
-		if (left) {
-			System.out.println("left");
-			player.x -= MOVE;
-		}
-		if (right) {
-			System.out.println("right");
-			player.x += MOVE;
-		}
+//		if (left) {
+//			System.out.println("left");
+//			player.x -= MOVE;
+//		}
+//		if (right) {
+//			System.out.println("right");
+//			player.x += MOVE;
+//		}
+		player.physics();
 	}
 
 	public void menuGraphics(Graphics2D g) {
@@ -139,7 +151,7 @@ public class LD35 implements KeyListener {
 		player.draw(g);
 	}
 
-	public boolean left, right, space;
+	public boolean left, right, space, jump;
 
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -152,6 +164,7 @@ public class LD35 implements KeyListener {
 				right = true;
 				break;
 			case KeyEvent.VK_SPACE:
+				if (!space) jump = true;
 				space = true;
 				break;
 			case KeyEvent.VK_LEFT:
@@ -187,6 +200,7 @@ public class LD35 implements KeyListener {
 				break;
 			case KeyEvent.VK_SPACE:
 				space = false;
+				jump = false;
 				break;
 			case KeyEvent.VK_ESCAPE:
 				state = PAUSE;
