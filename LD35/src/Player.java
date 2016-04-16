@@ -8,7 +8,7 @@ public class Player {
 			SQUARE = 1,
 			TRIANGLE = 2;
 
-	public int type = 0;
+	public int type = 1;
 
 	public double angle = 0;
 	public int x = 0, y = 0, radius  = 15;
@@ -47,7 +47,8 @@ public class Player {
 		Polygon p = null;
 
 		if (transition == 0) {
-			g.setColor(colors[type]);
+			c = colors[type];
+			g.setColor(c);
 			switch (type) {
 			case CIRCLE:
 				g.drawOval(x - radius, y - radius, radius * 2, radius * 2);
