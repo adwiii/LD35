@@ -30,7 +30,7 @@ public class LD35 implements KeyListener {
 			PAUSE = 2,
 			EDITOR = 4;
 
-	public int state = EDITOR;
+	public int state = PLAY;
 
 	public Level level;
 	public Player player;
