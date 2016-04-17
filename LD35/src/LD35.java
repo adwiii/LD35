@@ -30,7 +30,7 @@ public class LD35 implements KeyListener {
 			PAUSE = 2,
 			EDITOR = 4;
 
-	public int state = EDITOR;
+	public int state = PLAY;
 
 	public Level level;
 	public Player player;
@@ -43,6 +43,10 @@ public class LD35 implements KeyListener {
 	public LevelEditor editor;
 	
 	public LD35() {
+		
+	}
+	
+	public void initGUIAndStart() {
 		f = new JFrame(TITLE);
 		p = new JPanel();
 		p.addKeyListener(this);
@@ -120,6 +124,7 @@ public class LD35 implements KeyListener {
 
 	public static void main(String [] args) {
 		me = new LD35();
+		me.initGUIAndStart();
 	}
 
 
