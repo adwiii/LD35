@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 
 public class Player {
@@ -23,6 +24,9 @@ public class Player {
 			Color.green
 	};
 	public Color c = Color.WHITE;
+	
+	public boolean win;
+	public boolean dead;
 
 	public Level l;
 
@@ -182,9 +186,12 @@ public class Player {
 				cross = Math.abs(cross);
 				if (da <= radius || db <= radius || (Math.abs(cross) <= radius && da <= len && db <= len)) {
 					double angle = Math.atan2(line.getY2()-line.getY1(), line.getX2()-line.getX1());
+					if (Math.abs(angle) > Math.PI/2) angle -= Math.signum(angle) * Math.PI;
 					System.out.println(Math.toDegrees(angle));
 					hit = true;
-					anglemoment += Math.sin(angle) * G / radius;
+					double thy = line.getY1() + (dx-line.getX1()) * (line.getY2()-line.getY1()) / (line.getX2()-line.getX1());
+					boolean above = dy < thy;
+					if (above) anglemoment += Math.sin(angle) * G / radius;
 					if (Math.abs(anglemoment) > TERMINAL / radius) {
 						anglemoment = Math.signum(anglemoment) * TERMINAL / radius;
 					}
@@ -198,12 +205,11 @@ public class Player {
 						//						dx -= (radius-cross) * Math.sin(angle);
 						//						dy -= (radius-cross) * Math.cos(angle);
 					} else {
-						vx = Math.cos(angle) * anglemoment * radius;
-						vy = Math.sin(angle) * anglemoment * radius + 0;
+						vx = (above?1:-1)*Math.cos(angle) * anglemoment * radius;
+						vy = (above?1:-1)*Math.sin(angle) * anglemoment * radius + 0;
+						System.out.println(above);
 						onGround = true;
-						if (Math.abs(angle) > Math.PI/2) angle -= Math.signum(angle) * Math.PI;
-						double thy = line.getY1() + (dx-line.getX1()) * (line.getY2()-line.getY1()) / (line.getX2()-line.getX1());
-						if (dy < thy) {
+						if (above) {
 							onGround = true;
 							dx += (radius-cross) * Math.sin(angle);
 							dy -= (radius-cross) * Math.cos(angle);
@@ -212,6 +218,7 @@ public class Player {
 							dy += (radius-cross) * Math.cos(angle);
 						}
 					}
+					if (!above) hit = false;
 				}
 			}
 			if (!hit) {
@@ -247,20 +254,21 @@ public class Player {
 			if (LD35.me.right) onLeft = false;
 			if (vxmoment > 0) {
 				vxmoment = Math.max(0, vxmoment - (LD35.me.left? .075 : 0.1));
-				if (LD35.me.right) {
-					move = 1;
-					vxmoment = 0;
-				}
+//				if (LD35.me.right) {
+//					move = 1;
+//					vxmoment = 0;
+//				}
 			}
 			if (vxmoment < 0) {
 				vxmoment = Math.min(0, vxmoment + .075);
-				if (LD35.me.left) {
-					move = -1;
-					vxmoment = 0;
-				}
+//				if (LD35.me.left) {
+//					move = -1;
+//					vxmoment = 0;
+//				}
 			}
 			vx += 2*move;
 			vx += vxmoment;
+			vx = Math.max(-2, Math.min(2, vx));
 			vy = Math.max(-TERMINAL, Math.min(TERMINAL, vy));
 			if (onLeft || onRight) vy = Math.min(.5, vy);
 			dx += vx;
@@ -277,10 +285,11 @@ public class Player {
 				if (da <= rad || db <= rad || (Math.abs(cross) <= rad && da <= len && db <= len)) {
 					double angle = Math.atan2(line.getY2()-line.getY1(), line.getX2()-line.getX1());
 					this.angle = angle;
-					if (line.getX1()==line.getX2()) {
+					if (Math.abs(line.getX1()-line.getX2()) < .5*Math.abs(line.getY1()-line.getY2())) {
 						if (angle < 0) angle += Math.PI;
 						dy += (rad-cross) * Math.cos(angle);
-						if (dx > line.getX1()) {
+						double thx = line.getX1() + (dy-line.getY1()) * (line.getX2()-line.getX1()) / (line.getY2()-line.getY1());
+						if (dx > thx) {
 							onLeft = true;
 							onRight = false;
 							dx += (rad-cross) * Math.sin(angle);
@@ -337,6 +346,9 @@ public class Player {
 		}
 		x = (int) dx;
 		y = (int) dy;
+		Rectangle me = new Rectangle(x-radius, y-radius, 2*radius, 2*radius);
+		if (l.goal.contains(me)) win = true;
+		if (!l.border.intersects(me)) dead = true;
 	}
 
 }

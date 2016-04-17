@@ -34,7 +34,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 		start = new Point(width / 2, height / 4);
 	}
 
-	public static final int RAD = 3;
+	public static final int RAD = 10;
 
 	public ArrayList<Point> selected = new ArrayList<Point>();
 
@@ -67,6 +67,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 	public void physics() {
 		if (playing && !paused) {
 			LD35.me.player.physics();
+			if (LD35.me.player.win || LD35.me.player.dead) playing = false;
 		}
 	}
 	public int cx = 0, cy = 0;
@@ -238,7 +239,22 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 
 
 	@Override
-	public void keyReleased(KeyEvent e) {}
+	public void keyReleased(KeyEvent e) {
+		if (playing && !paused) {
+			switch (e.getKeyCode()) {
+			case KeyEvent.VK_A:
+				LD35.me.left = false;
+				break;
+			case KeyEvent.VK_D:
+				LD35.me.right = false;
+				break;
+			case KeyEvent.VK_SPACE:
+				LD35.me.space = false;
+				LD35.me.jump = false;
+				break;
+			}
+		}
+	}
 
 
 	@Override
