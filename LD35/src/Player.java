@@ -22,7 +22,7 @@ public class Player {
 			Color.green
 	};
 	public Color c = Color.WHITE;
-	
+
 	public Level l;
 
 	public static final int TRANSITION = 10; //default ticks
@@ -46,11 +46,11 @@ public class Player {
 	}
 
 	public int resolution = 10;
-	
+
 	public int [] xar = new int [resolution],
 			yar = new int [resolution];
 	public void draw(Graphics2D g) {
-//		g.setColor(c);
+		//		g.setColor(c);
 		//		g.drawLine(x, y, x, y);
 
 		Polygon p = null;
@@ -84,8 +84,8 @@ public class Player {
 		} else {
 			int ticks = TRANSITION - transition--; // 0 to transition (also decrement)
 			c = new Color((int) Math.round(colors[type].getRed() * transition / TRANSITION + colors[to].getRed() * ticks / TRANSITION),
-						  (int) Math.round(colors[type].getGreen() * transition / TRANSITION + colors[to].getGreen() * ticks / TRANSITION),
-						  (int) Math.round(colors[type].getBlue() * transition / TRANSITION + colors[to].getBlue() * ticks / TRANSITION));
+					(int) Math.round(colors[type].getGreen() * transition / TRANSITION + colors[to].getGreen() * ticks / TRANSITION),
+					(int) Math.round(colors[type].getBlue() * transition / TRANSITION + colors[to].getBlue() * ticks / TRANSITION));
 			int sides = 0;
 			switch (transitionType) {
 			case SQUARE_CIRCLE: ticks = TRANSITION - ticks;
@@ -111,21 +111,21 @@ public class Player {
 						Math.cos(angle + Math.PI / 2 + 2 * Math.PI * 0 / 3) * radius * (TRANSITION - ticks) / TRANSITION);
 				yar[0] = (int) Math.round(y + Math.sin(angle + 3 * Math.PI / 4 + Math.PI * 0 / 2) * radius * ticks / TRANSITION + 
 						Math.sin(angle + Math.PI / 2 + 2 * Math.PI * 0 / 3) * radius * (TRANSITION - ticks) / TRANSITION);
-				
+
 				xar[1] = (int) Math.round(x + Math.cos(angle + 3 * Math.PI / 4 + Math.PI * 1 / 2) * radius * ticks / TRANSITION + 
 						Math.cos(angle + Math.PI / 2 + 2 * Math.PI * 1 / 6) * radius * Math.tan(Math.PI / 6) * .5 * (TRANSITION - ticks) / TRANSITION);
 				yar[1] = (int) Math.round(y + Math.sin(angle + 3 * Math.PI / 4 + Math.PI * 1 / 2) * radius * ticks / TRANSITION + 
 						Math.sin(angle + Math.PI / 2 + 2 * Math.PI * 1 / 6) * radius * Math.tan(Math.PI / 6) * .5 * (TRANSITION - ticks) / TRANSITION);
-				
+
 				xar[2] = (int) Math.round(x + Math.cos(angle + 3 * Math.PI / 4 + Math.PI * 2 / 2) * radius * ticks / TRANSITION + 
 						Math.cos(angle + Math.PI / 2 + 2 * Math.PI * 1 / 3) * radius * (TRANSITION - ticks) / TRANSITION);
 				yar[2] = (int) Math.round(y + Math.sin(angle + 3 * Math.PI / 4 + Math.PI * 2 / 2) * radius * ticks / TRANSITION + 
 						Math.sin(angle + Math.PI / 2 + 2 * Math.PI * 1 / 3) * radius * (TRANSITION - ticks) / TRANSITION);
-				
+
 				xar[3] = (int) Math.round(x + Math.cos(angle + 3 * Math.PI / 4 + Math.PI * 3 / 2) * radius * ticks / TRANSITION + 
-						 Math.cos(angle + Math.PI / 2 + 2 * Math.PI * 2 / 3) * radius * (TRANSITION - ticks) / TRANSITION);
+						Math.cos(angle + Math.PI / 2 + 2 * Math.PI * 2 / 3) * radius * (TRANSITION - ticks) / TRANSITION);
 				yar[3] = (int) Math.round(y + Math.sin(angle + 3 * Math.PI / 4 + Math.PI * 3 / 2) * radius * ticks / TRANSITION + 
-						 Math.sin(angle + Math.PI / 2 + 2 * Math.PI * 2 / 3) * radius * (TRANSITION - ticks) / TRANSITION);
+						Math.sin(angle + Math.PI / 2 + 2 * Math.PI * 2 / 3) * radius * (TRANSITION - ticks) / TRANSITION);
 				break;
 			}
 			p = new Polygon(xar, yar, sides);
@@ -140,6 +140,7 @@ public class Player {
 	}
 	public void transition(int to) {
 		if (to == type || transition > 0) return;
+		anglemoment = 0;
 		this.to = to;
 		transitionType = to + (type << 2);
 		transition = TRANSITION;
@@ -148,10 +149,59 @@ public class Player {
 	boolean onLeft;
 	boolean onRight;
 	double vxmoment;
+	double anglemoment;
 	public void physics() {
 		switch (type) {
 		case CIRCLE:
-			
+			dx += vx;
+			dy += vy;
+			angle += anglemoment;
+			boolean hit = false;
+			for (Line2D line : l.lines) {
+				double da = Math.hypot(line.getX1()-dx, line.getY1()-dy);
+				double db = Math.hypot(line.getX2()-dx, line.getY2()-dy);
+				double len = Math.hypot(line.getX1()-line.getX2(), line.getY1()-line.getY2());
+				double cross = ((line.getX1()-dx)*(line.getY1()-line.getY2()) - (line.getY1()-dy)*(line.getX1()-line.getX2()))/len;
+				cross = Math.abs(cross);
+				if (da <= radius || db <= radius || (Math.abs(cross) <= radius && da <= len && db <= len)) {
+					double angle = Math.atan2(line.getY2()-line.getY1(), line.getX2()-line.getX1());
+					System.out.println(Math.toDegrees(angle));
+					hit = true;
+					anglemoment += Math.sin(angle) * G / radius;
+					anglemoment += (LD35.me.left ? -.01 : (LD35.me.right ? .01 : 0));
+					if (Math.abs(anglemoment) > TERMINAL / radius) {
+						anglemoment = Math.signum(anglemoment) * TERMINAL / radius;
+					}
+					if (line.getX1()==line.getX2() || Math.abs(angle) == Math.PI / 2) {
+						// just fall
+						System.out.println("FALL");
+						hit = false;
+						anglemoment = 0;
+						vx = 0;
+//						vy = 0;
+//						dx -= (radius-cross) * Math.sin(angle);
+//						dy -= (radius-cross) * Math.cos(angle);
+					} else {
+						vx = Math.cos(angle) * anglemoment * radius;
+						vy = Math.sin(angle) * anglemoment * radius + 0;
+						onGround = true;
+						if (Math.abs(angle) > Math.PI/2) angle -= Math.signum(angle) * Math.PI;
+						if (vy >= 0) {
+							onGround = true;
+							dx += (radius-cross) * Math.sin(angle);
+							dy -= (radius-cross) * Math.cos(angle);
+						} else {
+							dx += (radius-cross) * Math.sin(angle);
+							dy -= (radius-cross) * Math.cos(angle);
+							//							vy = 0;
+						}
+					}
+				}
+			}
+			if (!hit) {
+				System.out.println("NOT HIT");
+				vy += G;
+			}
 			break;
 		case SQUARE:
 			double rad = radius/Math.sqrt(2);
@@ -240,7 +290,7 @@ public class Player {
 			}
 			break;
 		case TRIANGLE:
-			
+
 			break;
 		}
 		x = (int) dx;
