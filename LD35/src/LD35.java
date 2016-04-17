@@ -30,7 +30,7 @@ public class LD35 implements KeyListener {
 			PAUSE = 2,
 			EDITOR = 4;
 
-	public int state = EDITOR;
+	public int state = MENU;
 
 	public Level level;
 	public Player player;
@@ -64,13 +64,12 @@ public class LD35 implements KeyListener {
 		p.addMouseListener(editor);
 		p.addMouseMotionListener(editor);
 		p.addKeyListener(editor);
-
-
+		
+		levelNum = 0;
+		nextLevel();
+		
 		menuFont = new Font(null, Font.BOLD, height / 10);
 		menuFontSmall = new Font(null, Font.PLAIN, height / 20);
-
-		level = new Level();
-		player = new Player(400, 600, level);
 
 		initThreads();
 
@@ -128,10 +127,34 @@ public class LD35 implements KeyListener {
 		me = new LD35();
 		me.initGUIAndStart();
 	}
-
+	int phase;
+	int levelNum = 0;
+	Level oldLevel;
+	Player oldPlayer;
+	int otx, oty;
+	static final int PHASE = 20;
+	public void nextLevel() {
+		oldLevel = level;
+		oldPlayer = player;
+		otx = tx;
+		oty = ty;
+		tx = 0;
+		ty = 0;
+		phase = PHASE;
+		level = new Level();
+		player = new Player(400, 600, level);
+		levelNum++;
+	}
+	
+	public void resetLevel() {
+		levelNum--;
+		nextLevel();
+	}
 
 	public void gamePhysics() {
 		player.physics();
+		if (player.win) nextLevel();
+		if (player.dead) resetLevel();
 	}
 
 	public void menuGraphics(Graphics2D g) {
@@ -145,12 +168,27 @@ public class LD35 implements KeyListener {
 	}
 	final static int PADDING = 100;
 	public void gameGraphics(Graphics2D g) {
+		if (phase > PHASE/2) {
+			if (oldLevel == null) {
+				menuGraphics(g);
+			} else {
+				g.translate(-otx, -oty);
+				oldLevel.draw(g);
+				oldPlayer.draw(g);
+				g.translate(otx, oty);
+			}
+			g.setColor(new Color(0, 0, 0, 2*(1-(float)phase/PHASE)));
+			g.fillRect(0, 0, width, height);
+			phase--;
+			return;
+		}
+		
 		if (player.x < tx + PADDING) tx = player.x - PADDING;
 		if (player.x > tx + width - PADDING) tx = player.x - width + PADDING;
 		if (player.y < ty + PADDING) ty = player.y - PADDING;
 		if (player.y > ty + height - PADDING) ty = player.y - height + PADDING;
-		tx = Math.max(level.border.x, Math.min(level.border.width-width, tx));
-		ty = Math.max(level.border.y, Math.min(level.border.height-height, ty));
+		tx = Math.max(level.border.x, Math.min(level.border.x+level.border.width-width, tx));
+		ty = Math.max(level.border.y, Math.min(level.border.y+level.border.height-height, ty));
 
 		g.translate(-tx, -ty);
 
@@ -159,6 +197,12 @@ public class LD35 implements KeyListener {
 		player.draw(g);
 
 		g.translate(tx, ty);
+		
+		if (phase > 0) {
+			g.setColor(new Color(0, 0, 0, 2f*phase/PHASE));
+			g.fillRect(0, 0, width, height);
+			phase--;
+		}
 	}
 
 	public boolean left, right, space, jump;
@@ -196,6 +240,9 @@ public class LD35 implements KeyListener {
 			}
 		}
 		if (state == MENU) {
+			levelNum = 0;
+			level = null;
+			nextLevel();
 			state = PLAY;
 			return;
 		}
