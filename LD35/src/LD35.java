@@ -149,11 +149,22 @@ public class LD35 implements KeyListener {
 		g.drawString(PRESS_ANY, (width - SwingUtilities.computeStringWidth(g.getFontMetrics(), PRESS_ANY)) / 2, height * 3 / 4);
 		g.setFont(temp);
 	}
-
+	final static int PADDING = 100;
 	public void gameGraphics(Graphics2D g) {
+		if (player.x < tx + PADDING) tx = player.x - PADDING;
+		if (player.x > tx + width - PADDING) tx = player.x - width + PADDING;
+		if (player.y < ty + PADDING) ty = player.y - PADDING;
+		if (player.y > ty + height - PADDING) ty = player.y - height + PADDING;
+		tx = Math.max(level.border.x, Math.min(level.border.width-width, tx));
+		ty = Math.max(level.border.y, Math.min(level.border.height-height, ty));
+		
+		g.translate(-tx, -ty);
+		
 		level.draw(g);
 //		player.angle += .1;
 		player.draw(g);
+		
+		g.translate(tx, ty);
 	}
 
 	public boolean left, right, space, jump;

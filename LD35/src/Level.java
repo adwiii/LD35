@@ -12,6 +12,7 @@ public class Level {
 	
 	public ArrayList<Line2D.Double> lines = new ArrayList<Line2D.Double>();
 	public Rectangle goal;
+	public Rectangle border;
 	
 	public Level(ArrayList<Line2D.Double> lines, Rectangle goal) {
 		this.lines = lines;
@@ -26,8 +27,10 @@ public class Level {
 		lines.add(new Line2D.Double(700, 700, 900, 600));
 		lines.add(new Line2D.Double(900, 100, 900, 600));
 		lines.add(new Line2D.Double(800, 100, 800, 600));
+		lines.add(new Line2D.Double(200, 100, 200, 500));
 //		lines.add(new Line2D.Double(100, 400, 900, 400));
 		goal = new Rectangle(0,0,0,0);
+		border = new Rectangle(-100,-100,1024+200,768+200);
 	}
 	
 	public void draw(Graphics2D g) {
