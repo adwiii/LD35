@@ -21,16 +21,14 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 
 	public Point start;
 
+	public boolean playing;
+	public boolean paused;
+
 	public boolean goalSelected = false, 
 			startSelected = false;
 
 	public int oldGoalX, oldGoalY;
 
-	/*
-	 * TODO set the mode of LD35 to EDITOR
-	 * TODO add this as MouseListener and MouseMotionListener and KeyListener
-	 */
-	
 	public LevelEditor (int width, int height) {
 		goal = new Rectangle(width /2, height / 2, width / 10, height / 10);
 		start = new Point(width / 2, height / 4);
@@ -42,24 +40,34 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 
 	public int tx = 0, ty = 0;
 	public void drawEditor(Graphics2D g) {
-		g.setColor(Color.white);
-		for (Point p : vertices) {
-			g.drawOval(p.x - RAD, p.y - RAD, RAD * 2, RAD * 2);
-		}
-		for (Connection c : connections) {
-			c.draw(g);
-		}
-		g.setColor(Color.magenta);
-		for (Point p : selected) {
-			g.drawOval(p.x - RAD, p.y - RAD, RAD * 2, RAD * 2);
-		}
-		g.setColor(Color.red);
-		g.draw(goal);
-		g.setColor(GOAL);
-		g.fill(goal);
+		if (playing) {
+			if (paused) LD35.me.pausedGraphics(g);
+			LD35.me.gameGraphics(g);
+		} else {
+			g.setColor(Color.white);
+			for (Point p : vertices) {
+				g.drawOval(p.x - RAD, p.y - RAD, RAD * 2, RAD * 2);
+			}
+			for (Connection c : connections) {
+				c.draw(g);
+			}
+			g.setColor(Color.magenta);
+			for (Point p : selected) {
+				g.drawOval(p.x - RAD, p.y - RAD, RAD * 2, RAD * 2);
+			}
+			g.setColor(Color.red);
+			g.draw(goal);
+			g.setColor(GOAL);
+			g.fill(goal);
 
-		g.setColor(Color.green);
-		g.drawOval(start.x - RAD, start.y - RAD, RAD * 2, RAD * 2);
+			g.setColor(Color.green);
+			g.drawOval(start.x - RAD, start.y - RAD, RAD * 2, RAD * 2);
+		}
+	}
+	public void physics() {
+		if (playing && !paused) {
+			LD35.me.player.physics();
+		}
 	}
 	public int cx = 0, cy = 0;
 	@Override
@@ -69,7 +77,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 			ty = cy - e.getY();
 		}
 		if (selected.size() == 1) {
-//			System.out.println("dragging");
+			//			System.out.println("dragging");
 			selected.get(0).x = e.getX() - tx;
 			selected.get(0).y = e.getY() - ty;
 		}
@@ -89,10 +97,10 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 		for (Connection c : connections) {
 			lines.add(c.getLine());
 		}
-		Level l = new Level(lines, goal);
-		Player p = new Player(start.x, start.y, l);
-
-		//TODO render, etc.
+		LD35.me.level =  new Level(lines, goal);
+		LD35.me.player = new Player(start.x, start.y, LD35.me.level);
+		playing = true;
+		paused = true;
 	}
 
 	@Override
@@ -105,12 +113,12 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 	public void mouseExited(MouseEvent e) {}
 	@Override
 	public void mousePressed(MouseEvent e) {
+		if (playing) return;
 		cx = e.getX();
 		cy = e.getY();
-//		System.out.println(e.getPoint());
+		//		System.out.println(e.getPoint());
 		boolean found = false;
 		for (Point p : vertices) {
-//			System.out.println(p);
 			if (Math.hypot(p.x - cx, p.y - cy) < RAD) {
 				if (selected.contains(p)) selected.clear();
 				selected.add(p);
@@ -173,13 +181,58 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
-		case KeyEvent.VK_ESCAPE:
-			selected.clear();
-			break;
-		case KeyEvent.VK_SPACE:
-			preview();
-			break;
+		if (playing) {
+			if (!paused) {
+				switch (e.getKeyCode()) {
+				case KeyEvent.VK_A:
+					LD35.me.left = true;
+					break;
+				case KeyEvent.VK_D:
+					LD35.me.right = true;
+					break;
+				case KeyEvent.VK_SPACE:
+					if (!LD35.me.space) LD35.me.jump = true;
+					LD35.me.space = true;
+					break;
+				case KeyEvent.VK_LEFT:
+					LD35.me.player.transition(Player.CIRCLE);
+					break;
+				case KeyEvent.VK_DOWN:
+					LD35.me.player.transition(Player.SQUARE);
+					break;
+				case KeyEvent.VK_RIGHT:
+					LD35.me.player.transition(Player.TRIANGLE);
+					break;
+				case KeyEvent.VK_ESCAPE:
+					paused = true;
+					break;	
+				}
+			} else {
+				if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					paused = false;
+				}
+			}
+			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+				playing = false;
+			}
+		} else {
+			switch (e.getKeyCode()) {
+			case KeyEvent.VK_ESCAPE:
+				selected.clear();
+				break;
+			case KeyEvent.VK_ENTER:
+				preview();
+				break;
+			case KeyEvent.VK_DELETE:
+				//				if (selected.size() =) {
+				Point p;
+				vertices.remove(p = selected.remove(0));
+				for (int i = 0; i < connections.size(); i++) {
+					if (connections.get(i).v1.equals(p) || connections.get(i).v2.equals(p)) {
+						connections.remove(i--);
+					}
+				}
+			}
 		}
 	}
 

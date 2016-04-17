@@ -17,7 +17,7 @@ public class LD35 implements KeyListener {
 	public static final String PRESS_ANY = "Press any key to begin...";
 	public static final long PHYSICS_DELAY = 10,
 			GRAPHICS_DELAY = 17;
-	
+
 	public Font menuFont, menuFontSmall;
 	public Color menuColor = Color.white;
 	public double MOVE = 1;
@@ -30,7 +30,7 @@ public class LD35 implements KeyListener {
 			PAUSE = 2,
 			EDITOR = 4;
 
-	public int state = PLAY;
+	public int state = EDITOR;
 
 	public Level level;
 	public Player player;
@@ -41,11 +41,11 @@ public class LD35 implements KeyListener {
 	public VolatileImage v;
 
 	public LevelEditor editor;
-	
+
 	public LD35() {
-		
+
 	}
-	
+
 	public void initGUIAndStart() {
 		f = new JFrame(TITLE);
 		p = new JPanel();
@@ -59,16 +59,16 @@ public class LD35 implements KeyListener {
 		f.pack();
 		f.setLocationRelativeTo(null);
 		v = p.createVolatileImage(width, height);
-		
+
 		editor = new LevelEditor(width, height);
 		p.addMouseListener(editor);
 		p.addMouseMotionListener(editor);
 		p.addKeyListener(editor);
-		
-		
+
+
 		menuFont = new Font(null, Font.BOLD, height / 10);
 		menuFontSmall = new Font(null, Font.PLAIN, height / 20);
-		
+
 		level = new Level();
 		player = new Player(400, 600, level);
 
@@ -86,6 +86,8 @@ public class LD35 implements KeyListener {
 				switch (state) {
 				case PLAY: gamePhysics();
 				break;
+				case EDITOR: editor.physics();
+				break;
 				}
 				try {
 					Thread.sleep(PHYSICS_DELAY);
@@ -100,13 +102,13 @@ public class LD35 implements KeyListener {
 				Graphics2D g = (Graphics2D) v.createGraphics();
 				g.fillRect(-1, -1, width + 2, height + 2);
 				switch (state) {
-				case PAUSE:
+				case PAUSE: pausedGraphics(g);
 				case PLAY: gameGraphics(g);
 				break;
 				case MENU: menuGraphics(g);
 				break;
 				case EDITOR: editor.drawEditor(g);
-					break;
+				break;
 				}
 				g.dispose();
 				p.getGraphics().drawImage(v, 0, 0, null);
@@ -129,14 +131,6 @@ public class LD35 implements KeyListener {
 
 
 	public void gamePhysics() {
-//		if (left) {
-//			System.out.println("left");
-//			player.x -= MOVE;
-//		}
-//		if (right) {
-//			System.out.println("right");
-//			player.x += MOVE;
-//		}
 		player.physics();
 	}
 
@@ -157,13 +151,13 @@ public class LD35 implements KeyListener {
 		if (player.y > ty + height - PADDING) ty = player.y - height + PADDING;
 		tx = Math.max(level.border.x, Math.min(level.border.width-width, tx));
 		ty = Math.max(level.border.y, Math.min(level.border.height-height, ty));
-		
+
 		g.translate(-tx, -ty);
-		
+
 		level.draw(g);
-//		player.angle += .1;
+		//		player.angle += .1;
 		player.draw(g);
-		
+
 		g.translate(tx, ty);
 	}
 
@@ -194,9 +188,12 @@ public class LD35 implements KeyListener {
 				break;
 			}
 		}
-		if (state == PAUSE && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-			state = PLAY;
-			return;
+		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			if (state == PAUSE) {
+				state = PLAY;
+			} else if (state == PLAY) {
+				state = PAUSE;
+			}
 		}
 		if (state == MENU) {
 			state = PLAY;
@@ -218,9 +215,6 @@ public class LD35 implements KeyListener {
 				space = false;
 				jump = false;
 				break;
-			case KeyEvent.VK_ESCAPE:
-				state = PAUSE;
-				return;
 			}
 		}
 	}
@@ -228,5 +222,10 @@ public class LD35 implements KeyListener {
 	@Override
 	public void keyTyped(KeyEvent e) {
 
+	}
+
+	public void pausedGraphics(Graphics2D g) {
+		g.setColor(Color.red);
+		g.drawString("PAUSED", 10, 15);
 	}
 }

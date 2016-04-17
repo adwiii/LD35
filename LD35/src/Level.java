@@ -17,6 +17,14 @@ public class Level {
 	public Level(ArrayList<Line2D.Double> lines, Rectangle goal) {
 		this.lines = lines;
 		this.goal = goal;
+		int minx = 0, miny = 0, maxx = 1024, maxy = 768;
+		for (Line2D.Double line : lines) {
+			minx = (int) Math.min(minx, Math.min(line.getX1(), line.getX2()));
+			maxx = (int) Math.max(maxx, Math.max(line.getX1(), line.getX2()));
+			miny = (int) Math.min(miny, Math.min(line.getY1(), line.getY2()));
+			maxy = (int) Math.max(maxy, Math.max(line.getY1(), line.getY2()));
+		}
+		border = new Rectangle(minx - 100, miny - 100, maxx + 100, maxy + 100);
 	}
 	
 	public Level() {
