@@ -41,19 +41,25 @@ public class TutorialLevel extends Level implements KeyListener {
 		goal = new Rectangle(-1000, -1000, 0, 0);
 		f = new Font("", Font.PLAIN, 20);
 	}
-	int tickTilNext = 50;
+	int tickTilNext = 0;
 	static final int DELAY = 50;
-	int timeout = 100;
+//	int timeout = 100;
 	Font f;
 	@Override
 	public void draw (Graphics2D g) {
 		super.draw(g);
 		g.setFont(f);
-		String [] lines = help[state].split("\n");
-		timeout = Math.max(0, timeout - 1);
+		String [] lines;
+		try {
+			lines = help[(tickTilNext < DELAY / 2) ? state : state - 1].split("\n");
+		} catch(Exception e) {
+			lines = help[state].split("\n");
+		}
+//		timeout = Math.max(0, timeout - 1);
 		tickTilNext = Math.max(0, tickTilNext - 1);
 //		System.out.println(tickTilNext);
-		g.setColor(new Color(255, 0, 0, 255 - 220 * tickTilNext / DELAY));
+		
+		g.setColor(new Color(255, 0, 0, 255 * Math.abs(tickTilNext - DELAY / 2) / (DELAY / 2)));
 		for (int i = 0; i < lines.length; i++) {
 			g.drawString(lines[i], 250, 200 + g.getFontMetrics().getHeight() * i);
 		}
@@ -64,12 +70,13 @@ public class TutorialLevel extends Level implements KeyListener {
 	public void keyPressed(KeyEvent e) {
 		if (noReset) return;
 		noReset = true;
-		if (timeout -- > 0) return; // initial so you dont miss anything
+//		if (timeout -- > 0) return; // initial so you dont miss anything
 		if (tickTilNext-- > 0) return;
 		int prevState = state;
 		switch (state) {
 		case 7: goal = new Rectangle(600, 400, 100, 100);
-		case 0:	timeout += 50;
+		case 0:	
+//			timeout += 50;
 		case 1: state++;
 			break;
 		case 2:
@@ -88,7 +95,9 @@ public class TutorialLevel extends Level implements KeyListener {
 			if (!LD35.me.player.onGround && LD35.me.player.type == Player.TRIANGLE && (e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_D)) state++;
 			break;
 		}
-		if (prevState != state) tickTilNext = DELAY;
+		if (prevState != state) {
+			tickTilNext = DELAY;
+		}
 	}
 
 	@Override
