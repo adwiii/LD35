@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -48,6 +49,10 @@ public class Player {
 		dx = x;
 		dy = y;
 		this.l = l;
+	}
+
+	public Player(Level level) {
+		this((level.start != null) ? level.start.x : 400, (level.start != null) ? level.start.y : 600, level);
 	}
 
 	public int resolution = 10;
@@ -192,6 +197,7 @@ public class Player {
 					double thy = line.getY1() + (dx-line.getX1()) * (line.getY2()-line.getY1()) / (line.getX2()-line.getX1());
 					boolean above = dy < thy;
 					if (above) anglemoment += Math.sin(angle) * G / radius;
+//					else anglemoment -= Math.sin(angle) * G / radius;
 					if (Math.abs(anglemoment) > TERMINAL / radius) {
 						anglemoment = Math.signum(anglemoment) * TERMINAL / radius;
 					}

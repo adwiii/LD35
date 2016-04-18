@@ -6,6 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.VolatileImage;
+import java.io.File;
+import java.util.Arrays;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -24,13 +26,16 @@ public class LD35 implements KeyListener {
 
 	public JFrame f;
 	public JPanel p;
+	
+	public String[] levels;
 
 	public static final int MENU = 0,
 			PLAY = 1,
 			PAUSE = 2,
 			EDITOR = 4;
 
-	public int state = MENU;
+	public int state = EDITOR;
+//	public int state = MENU;
 
 	public Level level;
 	public Player player;
@@ -123,10 +128,24 @@ public class LD35 implements KeyListener {
 
 	public static LD35 me;
 
-	public static void main(String [] args) {
+	public static void main(String [] args) throws Exception {
+//		Level l = new Level();
+//		LevelIO.writeLevel(l, "test.lvl");
+//		File f = new File("/lvl/");
+//		f.createNewFile();
 		me = new LD35();
+		me.loadLevels();
 		me.initGUIAndStart();
 	}
+	private void loadLevels() {
+		File dir = new File("lvl");
+		levels = dir.list();
+		Arrays.sort(levels);
+		for (int i = 0; i < levels.length; i++) {
+			levels[i] = "lvl/" + levels[i];
+		}
+	}
+
 	int phase;
 	int levelNum = 0;
 	Level oldLevel;
@@ -141,9 +160,13 @@ public class LD35 implements KeyListener {
 		tx = 0;
 		ty = 0;
 		phase = PHASE;
-		level = new Level();
-		player = new Player(400, 600, level);
-		levelNum++;
+//		level = new Level();
+		if (levelNum++ == levels.length) {
+			resetLevel();
+		} else {
+			level = LevelIO.readLevel(levels[levelNum]);
+			player = new Player(level);
+		}
 	}
 	
 	public void resetLevel() {

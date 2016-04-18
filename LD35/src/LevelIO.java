@@ -1,4 +1,5 @@
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.io.ObjectOutputStream;
 public class LevelIO {
 	public static void writeLevel(Level level, String source) {
 		try {
+			File f = new File(source);
+			f.createNewFile();
 			ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(source));
 			stream.writeObject(level);
 			stream.flush();

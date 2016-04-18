@@ -3,9 +3,15 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Level {
+public class Level implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2135156019779455634L;
 
 	public Color levelCol = new Color(0xAAAAAA);
 	
@@ -16,9 +22,10 @@ public class Level {
 	public Rectangle border;
 	public Point start;
 	
-	public Level(ArrayList<Line2D.Double> lines, Rectangle goal) {
+	public Level(ArrayList<Line2D.Double> lines, Rectangle goal, Point start) {
 		this.lines = lines;
 		this.goal = goal;
+		this.start = start;
 		int minx = 0, miny = 0, maxx = 1024, maxy = 768;
 		for (Line2D.Double line : lines) {
 			minx = (int) Math.min(minx, Math.min(line.getX1(), line.getX2()));
@@ -26,7 +33,7 @@ public class Level {
 			miny = (int) Math.min(miny, Math.min(line.getY1(), line.getY2()));
 			maxy = (int) Math.max(maxy, Math.max(line.getY1(), line.getY2()));
 		}
-		border = new Rectangle(minx - 100, miny - 100, maxx + 100, maxy + 100);
+		border = new Rectangle(minx - 100, miny - 100, maxx - minx + 200, maxy - miny + 200);
 	}
 	
 	public Level() {

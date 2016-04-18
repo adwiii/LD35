@@ -10,6 +10,8 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 public class LevelEditor implements MouseListener, MouseMotionListener, KeyListener {
 
 	public static final Color GOAL = new Color(0x80FF0000);
@@ -92,13 +94,15 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 		}
 
 	}
-
-	public void preview() {
+	public Level generateLevel() {
 		ArrayList<Line2D.Double> lines = new ArrayList<>();
 		for (Connection c : connections) {
 			lines.add(c.getLine());
 		}
-		LD35.me.level =  new Level(lines, goal);
+		return new Level(lines, goal, start);
+	}
+	public void preview() {
+		LD35.me.level =  generateLevel();
 		LD35.me.player = new Player(start.x, start.y, LD35.me.level);
 		playing = true;
 		paused = true;
@@ -182,6 +186,17 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 
 	@Override
 	public void keyPressed(KeyEvent e) {
+		if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_S) {
+			String s = (String)JOptionPane.showInputDialog(
+                    null,
+                    "Level Number?",
+                    "Customized Dialog",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    "");
+			LevelIO.writeLevel(generateLevel(), "lvl/" + s + ".lvl");
+		}
 		if (playing) {
 			if (!paused) {
 				switch (e.getKeyCode()) {
