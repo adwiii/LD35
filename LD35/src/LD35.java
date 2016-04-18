@@ -3,9 +3,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.VolatileImage;
+import java.awt.image.renderable.RenderContext;
 import java.io.File;
 import java.util.Arrays;
 
@@ -109,6 +111,7 @@ public class LD35 implements KeyListener {
 			while (true) {
 				Graphics2D g = (Graphics2D) v.createGraphics();
 				g.fillRect(-1, -1, width + 2, height + 2);
+				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				switch (state) {
 				case PAUSE: pausedGraphics(g);
 				case PLAY: gameGraphics(g);
@@ -132,7 +135,7 @@ public class LD35 implements KeyListener {
 
 	public static LD35 me;
 
-	public static void main(String [] args) throws Exception {
+	public static void main(String [] args) {
 //		Level l = new Level();
 //		LevelIO.writeLevel(l, "test.lvl");
 //		File f = new File("/lvl/");
@@ -231,8 +234,10 @@ public class LD35 implements KeyListener {
 		g.translate(tx, ty);
 		
 		if (phase > 0) {
-			g.setColor(new Color(0, 0, 0, 2f*phase/PHASE));
-			g.fillRect(0, 0, width, height);
+			try {
+				g.setColor(new Color(0, 0, 0, 2f*phase/PHASE));
+				g.fillRect(0, 0, width, height);
+			} catch (Exception e) {}
 			phase--;
 		}
 	}

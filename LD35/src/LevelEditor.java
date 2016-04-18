@@ -94,8 +94,8 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 			goal.y = oldGoalY - cy + e.getY();
 		}
 		if (startSelected) {
-			start.x = e.getX();
-			start.y = e.getY();
+			start.x = e.getX() - tx;
+			start.y = e.getY() - ty;
 		}
 
 	}
@@ -124,6 +124,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 	@Override
 	public void mousePressed(MouseEvent e) {
 		if (playing) return;
+		e.translatePoint(-tx, -ty);
 		cx = e.getX();
 		cy = e.getY();
 		//		System.out.println(e.getPoint());
@@ -139,8 +140,8 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 		if (!found) {
 			selected.clear();
 			if (goal.contains(e.getPoint())) {
-				oldGoalX = goal.x;
-				oldGoalY = goal.y;
+				oldGoalX = goal.x - tx;
+				oldGoalY = goal.y - ty;
 				goalSelected = true;
 			}
 			if (Math.hypot(start.x - cx, start.y - cy) < RAD) {
@@ -149,7 +150,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 		}
 		if (e.getButton() == MouseEvent.BUTTON3) {
 			if (selected.size() == 0){
-				vertices.add(new Point(e.getX() - tx, e.getY() - ty));
+				vertices.add(new Point(e.getX(), e.getY()));
 			} else if (selected.size() == 2) {
 				if (found) {
 					connections.add(new Connection(selected));

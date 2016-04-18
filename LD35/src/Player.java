@@ -197,8 +197,8 @@ public class Player {
 					boolean above = dy < thy;
 					if (above) anglemoment += Math.sin(angle) * G / radius;
 //					else anglemoment -= Math.sin(angle) * G / radius;
-					if (Math.abs(anglemoment) > TERMINAL / radius) {
-						anglemoment = Math.signum(anglemoment) * TERMINAL / radius;
+					if (Math.abs(anglemoment) > 3*TERMINAL / radius) {
+						anglemoment = Math.signum(anglemoment) * 3*TERMINAL / radius;
 					}
 					if (line.getX1()==line.getX2() || Math.abs(angle) == Math.PI / 2) {
 						// just fall
