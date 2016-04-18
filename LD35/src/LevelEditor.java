@@ -11,6 +11,7 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class LevelEditor implements MouseListener, MouseMotionListener, KeyListener {
 
@@ -46,6 +47,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 			if (paused) LD35.me.pausedGraphics(g);
 			LD35.me.gameGraphics(g);
 		} else {
+			g.translate(tx, ty);
 			g.setColor(Color.white);
 			for (Point p : vertices) {
 				g.drawOval(p.x - RAD, p.y - RAD, RAD * 2, RAD * 2);
@@ -73,11 +75,14 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 		}
 	}
 	public int cx = 0, cy = 0;
+	public boolean control;
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		if (e.getButton() == MouseEvent.BUTTON2) {
-			tx = cx - e.getX();
-			ty = cy - e.getY();
+		if (SwingUtilities.isLeftMouseButton(e) && control) {
+//			System.out.println("DRAGGING");
+			tx = -cx + e.getX();
+			ty = -cy + e.getY();
+			return;
 		}
 		if (selected.size() == 1) {
 			//			System.out.println("dragging");
@@ -192,6 +197,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 	public void keyPressed(KeyEvent e) {
 		if (LD35.me.state != LD35.EDITOR) return;
 		if (e.isControlDown()) {
+			control = true;
 			if (e.getKeyCode() == KeyEvent.VK_S) {
 				String s = (String)JOptionPane.showInputDialog(
 						null,
@@ -282,6 +288,9 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 	@Override
 	public void keyReleased(KeyEvent e) {
 		//		if (playing) {
+		if (!e.isControlDown()) {
+			control = false;
+		}
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_A:
 			LD35.me.left = false;

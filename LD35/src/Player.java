@@ -1,6 +1,5 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -71,7 +70,7 @@ public class Player {
 			case CIRCLE:
 				g.drawOval(x - radius, y - radius, radius * 2, radius * 2);
 				//draw half line showing where we are in angle
-				g.drawLine((int) Math.round(x + Math.cos(angle) * radius * .33), (int) Math.round(y + Math.sin(angle) * radius * .33), 
+				g.drawLine((int) Math.round(x + Math.cos(angle) * radius * 0.2), (int) Math.round(y + Math.sin(angle) * radius * 0.2), 
 						(int) Math.round(x + Math.cos(angle) * radius), (int) Math.round(y + Math.sin(angle) * radius));
 				break;
 			case SQUARE:
@@ -89,7 +88,7 @@ public class Player {
 					yar[i] = (int) Math.round(y + Math.sin(angle + Math.PI / 2 + 2 * Math.PI * i / 3 + Math.PI / 6) * radius);
 				}
 				p = new Polygon(xar, yar, 3);
-				g.drawLine((int) Math.round(x + Math.cos(angle) * radius * -.4), (int) Math.round(y + Math.sin(angle) * radius * -.4), 
+				g.drawLine((int) Math.round(x + Math.cos(angle) * radius * -.45), (int) Math.round(y + Math.sin(angle) * radius * -.45), 
 						(int) Math.round(x + Math.cos(angle) * radius), (int) Math.round(y + Math.sin(angle) * radius));
 				break;
 			}
