@@ -105,7 +105,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 		LD35.me.level =  generateLevel();
 		LD35.me.player = new Player(start.x, start.y, LD35.me.level);
 		playing = true;
-		paused = true;
+		paused = false;
 	}
 
 	@Override
@@ -172,6 +172,10 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 			v1 = points.get(0);
 			v2 = points.get(1);
 		}
+		public Connection(Point p1, Point p2) {
+			v1 = p1;
+			v2 = p2;
+		}
 		public Line2D.Double getLine() {
 			return new Line2D.Double(v1.x, v1.y, v2.x, v2.y);
 		}
@@ -186,16 +190,38 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_S) {
-			String s = (String)JOptionPane.showInputDialog(
-                    null,
-                    "Level Number?",
-                    "Customized Dialog",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    null,
-                    "");
-			LevelIO.writeLevel(generateLevel(), "lvl/" + s + ".lvl");
+		if (LD35.me.state != LD35.EDITOR) return;
+		if (e.isControlDown()) {
+			if (e.getKeyCode() == KeyEvent.VK_S) {
+				String s = (String)JOptionPane.showInputDialog(
+						null,
+						"Level Number?",
+						"Level Editor",
+						JOptionPane.PLAIN_MESSAGE,
+						null,
+						null,
+						"");
+				LevelIO.writeLevel(generateLevel(), "lvl/" + s + ".lvl");
+			} else if (e.getKeyCode() == KeyEvent.VK_O) {
+				String s = (String)JOptionPane.showInputDialog(
+						null,
+						"Level Number?",
+						"Level Editor",
+						JOptionPane.PLAIN_MESSAGE,
+						null,
+						null,
+						"");
+				Level l = LevelIO.readLevel("lvl/" + s + ".lvl");
+				start = l.start;
+				goal = l.goal;
+				for (Line2D.Double line : l.lines) {
+					Point p1 = new Point((int) line.x1, (int) line.y1);
+					Point p2 = new Point((int) line.x2, (int) line.y2);
+					vertices.add(p1);
+					vertices.add(p2);
+					connections.add(new Connection(p1, p2));
+				}
+			}
 		}
 		if (playing) {
 			if (!paused) {
@@ -242,7 +268,7 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 			case KeyEvent.VK_DELETE:
 				//				if (selected.size() =) {
 				Point p;
-				vertices.remove(p = selected.remove(0));
+				vertices.remove(p = selected.remove(selected.size() - 1));
 				for (int i = 0; i < connections.size(); i++) {
 					if (connections.get(i).v1.equals(p) || connections.get(i).v2.equals(p)) {
 						connections.remove(i--);
@@ -255,20 +281,20 @@ public class LevelEditor implements MouseListener, MouseMotionListener, KeyListe
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		if (playing && !paused) {
-			switch (e.getKeyCode()) {
-			case KeyEvent.VK_A:
-				LD35.me.left = false;
-				break;
-			case KeyEvent.VK_D:
-				LD35.me.right = false;
-				break;
-			case KeyEvent.VK_SPACE:
-				LD35.me.space = false;
-				LD35.me.jump = false;
-				break;
-			}
+		//		if (playing) {
+		switch (e.getKeyCode()) {
+		case KeyEvent.VK_A:
+			LD35.me.left = false;
+			break;
+		case KeyEvent.VK_D:
+			LD35.me.right = false;
+			break;
+		case KeyEvent.VK_SPACE:
+			LD35.me.space = false;
+			LD35.me.jump = false;
+			break;
 		}
+		//		}
 	}
 
 

@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -25,6 +26,8 @@ public class LD35 implements KeyListener {
 	public Color menuColor = Color.white;
 	public double MOVE = 1;
 
+	public boolean customLevel;
+	
 	public JFrame f;
 	public JPanel p;
 	
@@ -154,6 +157,10 @@ public class LD35 implements KeyListener {
 	int otx, oty;
 	static final int PHASE = 20;
 	public void nextLevel() {
+		if (customLevel) {
+			player = new Player(level);
+			return;
+		}
 		oldLevel = level;
 		oldPlayer = player;
 		otx = tx;
@@ -255,6 +262,20 @@ public class LD35 implements KeyListener {
 			case KeyEvent.VK_RIGHT:
 				player.transition(Player.TRIANGLE);
 				break;
+			case KeyEvent.VK_O:
+				if (e.isControlDown()) {
+					String s = (String)JOptionPane.showInputDialog(
+							null,
+							"Level Number?",
+							"Level Editor",
+							JOptionPane.PLAIN_MESSAGE,
+							null,
+							null,
+							"");
+					customLevel = true;
+					level = LevelIO.readLevel("lvl/" + s + ".lvl");
+					player = new Player(level);
+				}
 			}
 		}
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
