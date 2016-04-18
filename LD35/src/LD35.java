@@ -15,7 +15,8 @@ import javax.swing.SwingUtilities;
 
 public class LD35 implements KeyListener {
 
-	public static final String TITLE = "TITLE";
+	public static final String SHORT_TITLE = "Cir Squiangle";
+	public static final String TITLE = "The Adventures of";
 	public static final String PRESS_ANY = "Press any key to begin...";
 	public static final long PHYSICS_DELAY = 10,
 			GRAPHICS_DELAY = 17;
@@ -34,8 +35,8 @@ public class LD35 implements KeyListener {
 			PAUSE = 2,
 			EDITOR = 4;
 
-	public int state = EDITOR;
-//	public int state = MENU;
+//	public int state = EDITOR;
+	public int state = MENU;
 
 	public Level level;
 	public Player player;
@@ -52,7 +53,7 @@ public class LD35 implements KeyListener {
 	}
 
 	public void initGUIAndStart() {
-		f = new JFrame(TITLE);
+		f = new JFrame(SHORT_TITLE);
 		p = new JPanel();
 		p.addKeyListener(this);
 		f.setResizable(false); // maybe
@@ -161,10 +162,10 @@ public class LD35 implements KeyListener {
 		ty = 0;
 		phase = PHASE;
 //		level = new Level();
-		if (levelNum++ == levels.length) {
+		if (levelNum >= levels.length) {
 			resetLevel();
 		} else {
-			level = LevelIO.readLevel(levels[levelNum]);
+			level = LevelIO.readLevel(levels[levelNum++]);
 			player = new Player(level);
 		}
 	}
@@ -185,6 +186,7 @@ public class LD35 implements KeyListener {
 		g.setColor(menuColor);
 		g.setFont(menuFont);
 		g.drawString(TITLE, (width - SwingUtilities.computeStringWidth(g.getFontMetrics(), TITLE)) / 2, height / 4);
+		g.drawString(SHORT_TITLE, (width - SwingUtilities.computeStringWidth(g.getFontMetrics(), SHORT_TITLE)) / 2, height / 4 + g.getFontMetrics().getHeight());
 		g.setFont(menuFontSmall);
 		g.drawString(PRESS_ANY, (width - SwingUtilities.computeStringWidth(g.getFontMetrics(), PRESS_ANY)) / 2, height * 3 / 4);
 		g.setFont(temp);
