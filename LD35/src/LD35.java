@@ -40,8 +40,8 @@ public class LD35 implements KeyListener {
 			PAUSE = 2,
 			EDITOR = 4;
 
-	public int state = EDITOR;
-//	public int state = MENU;
+//	public int state = EDITOR;
+	public int state = MENU;
 
 	public Level level;
 	public Player player;
@@ -76,7 +76,7 @@ public class LD35 implements KeyListener {
 		p.addMouseMotionListener(editor);
 		p.addKeyListener(editor);
 		
-		levelNum = 0;
+		levelNum = -1;
 		nextLevel();
 		
 		menuFont = new Font(null, Font.BOLD, height / 10);
@@ -175,7 +175,13 @@ public class LD35 implements KeyListener {
 		if (levelNum >= levels.length) {
 			resetLevel();
 		} else {
-			level = LevelIO.readLevel(levels[levelNum++]);
+			if (levelNum < 0) {
+				level = new TutorialLevel();
+				p.addKeyListener((TutorialLevel) level);
+				levelNum++;
+			} else {
+				level = LevelIO.readLevel(levels[levelNum++]);
+			}
 			player = new Player(level);
 		}
 	}
@@ -291,7 +297,7 @@ public class LD35 implements KeyListener {
 			}
 		}
 		if (state == MENU) {
-			levelNum = 0;
+			levelNum = -1;
 			level = null;
 			nextLevel();
 			state = PLAY;
