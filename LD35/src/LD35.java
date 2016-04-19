@@ -82,8 +82,8 @@ public class LD35 implements KeyListener {
 		p.addMouseMotionListener(editor);
 		p.addKeyListener(editor);
 		
-		levelNum = -1;
-		nextLevel();
+//		levelNum = -1;
+//		nextLevel();
 		
 		menuFont = new Font(null, Font.BOLD, height / 10);
 		menuFontSmall = new Font(null, Font.PLAIN, height / 20);
@@ -97,45 +97,49 @@ public class LD35 implements KeyListener {
 	public static int BUFFER = 5;
 
 	public void initThreads() {
-		physics = new Thread(() -> {
-			while (true) {
-				switch (state) {
-				case PLAY: gamePhysics();
-				break;
-				case EDITOR: editor.physics();
-				break;
-				}
-				try {
-					Thread.sleep(PHYSICS_DELAY);
-				} catch (Exception e) {
-					e.printStackTrace();
+		physics = new Thread() {
+			public void run() {
+				while (true) {
+					switch (state) {
+					case PLAY: gamePhysics();
+					break;
+					case EDITOR: editor.physics();
+					break;
+					}
+					try {
+						Thread.sleep(PHYSICS_DELAY);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
-		});
+		};
 		physics.start();
-		graphics = new Thread(() -> {
-			while (true) {
-				Graphics2D g = (Graphics2D) v.createGraphics();
-				g.fillRect(-1, -1, width + 2, height + 2);
-				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				switch (state) {
-				case PAUSE: pausedGraphics(g);
-				case PLAY: gameGraphics(g);
-				break;
-				case MENU: menuGraphics(g);
-				break;
-				case EDITOR: editor.drawEditor(g);
-				break;
-				}
-				g.dispose();
-				p.getGraphics().drawImage(v, 0, 0, null);
-				try {
-					Thread.sleep(GRAPHICS_DELAY);
-				} catch (Exception e) {
-					e.printStackTrace();
+		graphics = new Thread() {
+			public void run() {	
+				while (true) {
+					Graphics2D g = (Graphics2D) v.createGraphics();
+					g.fillRect(-1, -1, width + 2, height + 2);
+					g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					switch (state) {
+					case PAUSE: pausedGraphics(g);
+					case PLAY: gameGraphics(g);
+					break;
+					case MENU: menuGraphics(g);
+					break;
+					case EDITOR: editor.drawEditor(g);
+					break;
+					}
+					g.dispose();
+					p.getGraphics().drawImage(v, 0, 0, null);
+					try {
+						Thread.sleep(GRAPHICS_DELAY);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
-		});
+		};
 		graphics.start();
 	}
 
@@ -190,6 +194,7 @@ public class LD35 implements KeyListener {
 		}
 		oldLevel = level;
 		oldPlayer = player;
+		if (level instanceof TutorialLevel) p.removeKeyListener((TutorialLevel) level);
 		otx = tx;
 		oty = ty;
 		tx = 0;
@@ -242,7 +247,7 @@ public class LD35 implements KeyListener {
 				oldPlayer.draw(g);
 				g.translate(otx, oty);
 			}
-			g.setColor(new Color(0, 0, 0, 2*(1-(float)phase/PHASE)));
+			g.setColor(new Color(0, 0, 0, 2*(1-(float)(phase-1)/PHASE)));
 			g.fillRect(0, 0, width, height);
 			phase--;
 			return;
@@ -262,6 +267,16 @@ public class LD35 implements KeyListener {
 		player.draw(g);
 
 		g.translate(tx, ty);
+		
+		Font f = g.getFont();
+		g.setFont(f.deriveFont(20f));
+		g.setColor(Color.white);
+		if (levelNum == 0) {
+			g.drawString("Tutorial", 10, 30);
+		} else if (levelNum < levels.length) {
+			g.drawString("Level " + levelNum + " of " + ~-levels.length, 10, 30);
+		}
+		g.setFont(f);
 		
 		if (phase > 0) {
 			try {
@@ -354,6 +369,9 @@ public class LD35 implements KeyListener {
 
 	public void pausedGraphics(Graphics2D g) {
 		g.setColor(Color.red);
-		g.drawString("PAUSED", 10, 15);
+		Font f = g.getFont();
+		g.setFont(f.deriveFont(40f));
+		g.drawString("Paused", (width-SwingUtilities.computeStringWidth(g.getFontMetrics(), "Paused"))/2, (height+40)/2);
+		g.setFont(f);
 	}
 }
