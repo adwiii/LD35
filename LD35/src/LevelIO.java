@@ -21,7 +21,8 @@ public class LevelIO {
 	}
 	public static Level readLevel(String source) {
 		try {
-			ObjectInputStream stream = new ObjectInputStream(new FileInputStream(source));
+//			ObjectInputStream stream = new ObjectInputStream(new FileInputStream(source));
+			ObjectInputStream stream = new ObjectInputStream(LevelIO.class.getResourceAsStream(source));
 			Level level = (Level) stream.readObject();
 			stream.close();
 			return level;

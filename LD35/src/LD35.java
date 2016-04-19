@@ -9,7 +9,13 @@ import java.awt.event.KeyListener;
 import java.awt.image.VolatileImage;
 import java.awt.image.renderable.RenderContext;
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.security.CodeSource;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -145,11 +151,29 @@ public class LD35 implements KeyListener {
 		me.initGUIAndStart();
 	}
 	private void loadLevels() {
-		File dir = new File("lvl");
-		levels = dir.list();
-		Arrays.sort(levels);
-		for (int i = 0; i < levels.length; i++) {
-			levels[i] = "lvl/" + levels[i];
+		levels = null;
+		CodeSource src = LD35.class.getProtectionDomain().getCodeSource();
+	    URL jar = src.getLocation();
+		if (jar.toString().endsWith(".jar")) {
+		    try {
+				ZipInputStream zip = new ZipInputStream(jar.openStream());
+				ZipEntry ze = null;
+				ArrayList<String> list = new ArrayList<String>();
+
+			    while ((ze = zip.getNextEntry()) != null) {
+			        String entryName = ze.getName();
+			        if (entryName.endsWith(".lvl") ) {
+			            list.add(entryName);
+			        }
+			    }
+			    levels = new String[list.size()];
+			    levels = list.toArray(levels);
+			    Arrays.sort(levels);
+			} catch (IOException e) {}
+		} else {
+			File dir = new File("lvl");
+			levels = dir.list();
+			Arrays.sort(levels);
 		}
 	}
 
@@ -284,7 +308,7 @@ public class LD35 implements KeyListener {
 							null,
 							"");
 					customLevel = true;
-					level = LevelIO.readLevel("lvl/" + s + ".lvl");
+					level = LevelIO.readLevel(s + ".lvl");
 					player = new Player(level);
 				}
 			}
