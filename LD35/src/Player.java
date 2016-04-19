@@ -356,4 +356,8 @@ public class Player {
 		if (!l.border.intersects(me)) dead = true;
 	}
 
+	public void transition() {
+		transition((type + 1) % 3);		
+	}
+
 }

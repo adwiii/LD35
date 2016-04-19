@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.awt.image.renderable.RenderContext;
 import java.io.File;
@@ -35,10 +36,10 @@ public class LD35 implements KeyListener {
 	public double MOVE = 1;
 
 	public boolean customLevel;
-	
+
 	public JFrame f;
 	public JPanel p;
-	
+
 	public String[] levels;
 
 	public static final int MENU = 0,
@@ -46,7 +47,7 @@ public class LD35 implements KeyListener {
 			PAUSE = 2,
 			EDITOR = 4;
 
-//	public int state = EDITOR;
+	//	public int state = EDITOR;
 	public int state = MENU;
 
 	public Level level;
@@ -81,20 +82,41 @@ public class LD35 implements KeyListener {
 		p.addMouseListener(editor);
 		p.addMouseMotionListener(editor);
 		p.addKeyListener(editor);
-		
-//		levelNum = -1;
-//		nextLevel();
-		
+
+		//		levelNum = -1;
+		//		nextLevel();
+
 		menuFont = new Font(null, Font.BOLD, height / 10);
 		menuFontSmall = new Font(null, Font.PLAIN, height / 20);
 
+
+		BufferedImage bi = new BufferedImage(35, 35, BufferedImage.TYPE_INT_ARGB);
+		animationPlayer = new Player(bi.getWidth() / 2, bi.getHeight() / 2, null);
+		animationPlayer.angle = Math.PI;
+		Graphics2D g = (Graphics2D) bi.getGraphics();
+//		g.setColor(Color.black);
+//		g.fillRect(-1, -1, bi.getWidth() + 2, bi.getHeight() + 2);
+		animationPlayer.type = 0;
+		animationPlayer.draw(g);
+		animationPlayer.type = 1;
+		animationPlayer.draw(g);
+		animationPlayer.type = 2;
+		animationPlayer.draw(g);
+		f.setIconImage(bi);
+
+		animationPlayer = new Player(width / 2, height / 2, null);
+		//		player.type = 2;
+		animationPlayer.angle = Math.PI;
+		
 		initThreads();
 
 		p.grabFocus();
 	}
 
+	public Player animationPlayer;
 	public Thread physics, graphics;
 	public static int BUFFER = 5;
+	int animationTick;
 
 	public void initThreads() {
 		physics = new Thread() {
@@ -146,10 +168,10 @@ public class LD35 implements KeyListener {
 	public static LD35 me;
 
 	public static void main(String [] args) {
-//		Level l = new Level();
-//		LevelIO.writeLevel(l, "test.lvl");
-//		File f = new File("/lvl/");
-//		f.createNewFile();
+		//		Level l = new Level();
+		//		LevelIO.writeLevel(l, "test.lvl");
+		//		File f = new File("/lvl/");
+		//		f.createNewFile();
 		me = new LD35();
 		me.loadLevels();
 		me.initGUIAndStart();
@@ -157,22 +179,22 @@ public class LD35 implements KeyListener {
 	private void loadLevels() {
 		levels = null;
 		CodeSource src = LD35.class.getProtectionDomain().getCodeSource();
-	    URL jar = src.getLocation();
+		URL jar = src.getLocation();
 		if (jar.toString().endsWith(".jar")) {
-		    try {
+			try {
 				ZipInputStream zip = new ZipInputStream(jar.openStream());
 				ZipEntry ze = null;
 				ArrayList<String> list = new ArrayList<String>();
 
-			    while ((ze = zip.getNextEntry()) != null) {
-			        String entryName = ze.getName();
-			        if (entryName.endsWith(".lvl") ) {
-			            list.add(entryName);
-			        }
-			    }
-			    levels = new String[list.size()];
-			    levels = list.toArray(levels);
-			    Arrays.sort(levels);
+				while ((ze = zip.getNextEntry()) != null) {
+					String entryName = ze.getName();
+					if (entryName.endsWith(".lvl") ) {
+						list.add(entryName);
+					}
+				}
+				levels = new String[list.size()];
+				levels = list.toArray(levels);
+				Arrays.sort(levels);
 			} catch (IOException e) {}
 		} else {
 			File dir = new File("lvl");
@@ -200,7 +222,7 @@ public class LD35 implements KeyListener {
 		tx = 0;
 		ty = 0;
 		phase = PHASE;
-//		level = new Level();
+		//		level = new Level();
 		if (levelNum >= levels.length) {
 			resetLevel();
 		} else {
@@ -214,7 +236,7 @@ public class LD35 implements KeyListener {
 			player = new Player(level);
 		}
 	}
-	
+
 	public void resetLevel() {
 		levelNum--;
 		nextLevel();
@@ -235,7 +257,15 @@ public class LD35 implements KeyListener {
 		g.setFont(menuFontSmall);
 		g.drawString(PRESS_ANY, (width - SwingUtilities.computeStringWidth(g.getFontMetrics(), PRESS_ANY)) / 2, height * 3 / 4);
 		g.setFont(temp);
+		g.scale(2, 2);
+		g.translate(-animationPlayer.x / 2, -animationPlayer.y / 2);
+		animationPlayer.draw(g);
+//		g.translate(player.x, player.y);
+//		g.scale(.5, .5);
+		if (tick++ % 50 == 0)
+			animationPlayer.transition();
 	}
+	int tick;
 	final static int PADDING = 100;
 	public void gameGraphics(Graphics2D g) {
 		if (phase > PHASE/2) {
@@ -252,7 +282,7 @@ public class LD35 implements KeyListener {
 			phase--;
 			return;
 		}
-		
+
 		if (player.x < tx + PADDING) tx = player.x - PADDING;
 		if (player.x > tx + width - PADDING) tx = player.x - width + PADDING;
 		if (player.y < ty + PADDING) ty = player.y - PADDING;
@@ -267,7 +297,7 @@ public class LD35 implements KeyListener {
 		player.draw(g);
 
 		g.translate(tx, ty);
-		
+
 		Font f = g.getFont();
 		g.setFont(f.deriveFont(20f));
 		g.setColor(Color.white);
@@ -277,7 +307,7 @@ public class LD35 implements KeyListener {
 			g.drawString("Level " + levelNum + " of " + ~-levels.length, 10, 30);
 		}
 		g.setFont(f);
-		
+
 		if (phase > 0) {
 			try {
 				g.setColor(new Color(0, 0, 0, 2f*phase/PHASE));
